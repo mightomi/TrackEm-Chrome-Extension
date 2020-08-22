@@ -1,0 +1,30 @@
+{
+  "manifest_version": 2,
+  "name": "Track-IT",
+  "description": "Automatically keep tracks of all your TV-Series and anime ",
+  "version": "0.1",
+  "icons": {"128": "icon.png"},
+  "content_scripts": [
+    {
+      "matches": ["<all_urls>"],
+      "js": ["content.js"]
+    }
+  ],
+  
+
+  "browser_action": {
+    "default_icon":"icon.png",
+    "default_popup": "popup.html"
+  },
+
+  "permissions": [
+    "activeTab",
+    "history",
+    "storage"
+  ],
+
+  "background":{
+    "scripts": ["background.js"],
+    "persistent": false
+  }
+}
