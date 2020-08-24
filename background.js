@@ -3,10 +3,10 @@ console.log("message log go brrr");
 function findSeries(allHistoryText, allHistoryUrl) {
 	// main work done here
 	/*
-	1. list of all plausable titles which are series
-	2. 
+	 
 	*/
 
+	//	1. all plausable webpage titles which could be series series
 	let allHistoryText_withKeyword = [];
 	for(var i=0; i<allHistoryText.length; i++) {
 
@@ -22,18 +22,29 @@ function findSeries(allHistoryText, allHistoryUrl) {
 			allHistoryText_withKeyword.push(allHistoryText[i]);
 		}
 	}
+	//console.log(allHistoryText_withKeyword);
 
-	console.log(allHistoryText_withKeyword);
 
-	let allHistoryText_noNum = [];
+	// 2. remove dublicates
+	// create a set, add all element in it, convert back to array
+	let setTemp = new Set();
 	for(var i=0; i<allHistoryText_withKeyword.length; i++) {
-
-		let strTemp = allHistoryText_withKeyword[i].replace(/\d+/g, '');
-		allHistoryText_noNum.push(strTemp);
+		setTemp.add(allHistoryText_withKeyword[i]);
 	}
+	let allHistoryText_unique = Array.from(setTemp);
+	//console.log(allHistoryText_unique);
 
 
-	console.log(allHistoryText_noNum);
+
+	// let allHistoryText_noNum = [];
+	// for(var i=0; i<allHistoryText_withKeyword.length; i++) {
+
+	// 	let strTemp = allHistoryText_withKeyword[i].replace(/\d+/g, '');
+	// 	allHistoryText_noNum.push(strTemp);
+	// }
+
+
+	// console.log(allHistoryText_noNum);
 
 	
 }
