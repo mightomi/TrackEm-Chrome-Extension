@@ -26,7 +26,7 @@ function findSeries(allHistoryText, allHistoryUrl) {
 
 
 	// 2. remove dublicates
-	// create a set, add all element in it, convert back to array
+	//    create a set, add all element in it, convert back to array
 	let setTemp = new Set();
 	for(var i=0; i<allHistoryText_withKeyword.length; i++) {
 		setTemp.add(allHistoryText_withKeyword[i]);
@@ -35,16 +35,103 @@ function findSeries(allHistoryText, allHistoryUrl) {
 	//console.log(allHistoryText_unique);
 
 
+	// 3. elements with frequency atleast 2
+	// function which returns the last numbers from string
+	function episodeNameNoNum(title) {
 
-	// let allHistoryText_noNum = [];
-	// for(var i=0; i<allHistoryText_withKeyword.length; i++) {
+		let len = title.length;
 
-	// 	let strTemp = allHistoryText_withKeyword[i].replace(/\d+/g, '');
-	// 	allHistoryText_noNum.push(strTemp);
-	// }
+		var posEnd = -1;
+		var posStart;
+		for(var i=len-1; i>=0; i--) {
 
+			if(title[i]>='0' && title[i]<= '9' && posEnd == -1) {
+				posEnd = i;
+				posStart = i;
+			}
+			if(title[i]>='0' && title[i]<= '9') {
+				posStart = i;
+			}
+			if(!(title[i]>='0' && title[i]<= '9') && posEnd != -1) {
+				break;
+			}
+		}
 
-	// console.log(allHistoryText_noNum);
+		if(posEnd == -1) {
+			return null;	// return null since title with no ep num is useless
+			//console.log("no number found")
+		}
+		else{
+			let episodeName = title.substring(0, posStart) + 
+							title.substring(posEnd+1, len);
+			//console.log(episodeName);
+			return episodeName;
+		}
+	}
+	function episodeNum(title) {
+
+		let len = title.length;
+
+		var posEnd = -1;
+		var posStart;
+		for(var i=len-1; i>=0; i--) {
+
+			if(title[i]>='0' && title[i]<= '9' && posEnd == -1) {
+				posEnd = i;
+				posStart = i;
+			}
+			if(title[i]>='0' && title[i]<= '9') {
+				posStart = i;
+			}
+			if(!(title[i]>='0' && title[i]<= '9') && posEnd != -1) {
+				break;
+			}
+
+		}
+
+		if(posEnd == -1) {
+			return null;
+			//console.log("no number found");
+		}
+		else{
+			//console.log(title.substring(posStart, posEnd+1));
+			return (title.substring(posStart, posEnd+1));
+		}
+			
+	}
+
+	let arrHash = [];
+	for(var i=0; i<allHistoryText_unique.length; i++) {
+
+		//console.log(allHistoryText_unique[i]);
+		//episodeNameNoNum(allHistoryText_unique[i]);
+		//episodeNum(allHistoryText_unique[i]);
+
+		let strTemp = episodeNameNoNum(allHistoryText_unique[i]);
+		if(arrHash.hasOwnProperty(strTemp)) {
+
+			let episodeNumber = episodeNum(allHistoryText_unique[i]);
+			arrHash[strTemp].push(episodeNumber);
+			//console.log(strTemp, " ", arrHash[strTemp]);	
+		}
+		else {
+			let episodeNumber = episodeNum(allHistoryText_unique[i]);
+			if(episodeNumber == null) { // skip if no episode num found
+				continue;
+			}
+			arrHash[strTemp] = [];		
+		}
+
+	}
+
+	for(var obj in arrHash) {
+
+		if(arrHash[obj].length > 0) {
+			console.log(obj)
+			console.log(arrHash[obj]);
+		}
+
+	}
 
 	
 }
