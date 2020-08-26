@@ -1,5 +1,7 @@
 console.log("message log go brrr");
 
+var finalAllSeries = [];  // object containing list of series and its ep array
+
 function findSeries(allHistoryText, allHistoryUrl) {
 
   // only search titles with certain keywords
@@ -19,7 +21,7 @@ function findSeries(allHistoryText, allHistoryUrl) {
     }
   }
 
-  // remove duplicates, same title searched multiple times is useless
+  // remove duplicates, same title searched/watched multiple times is useless
   //    create a set, add all element in it, convert back to array
   let setTemp = new Set();
   for(var i=0; i<allHistoryText_withKeyword.length; i++) {
@@ -93,13 +95,14 @@ function findSeries(allHistoryText, allHistoryUrl) {
 
   // the index of arrHash contains the name of the series without ep number
   // the element present at that index is an array consisting of list of episodes
-  let arrHash = [];
+  var arrHash = [];
   for(var i=0; i<allHistoryText_unique.length; i++) {
 
     let strTemp = episodeNameNoNum(allHistoryText_unique[i]);
     if(arrHash.hasOwnProperty(strTemp)) {
 
       let episodeNumber = episodeNum(allHistoryText_unique[i]);
+      episodeNumber = parseInt(episodeNumber);
       arrHash[strTemp].push(episodeNumber);
     }
     else {
@@ -107,23 +110,39 @@ function findSeries(allHistoryText, allHistoryUrl) {
       if(episodeNumber == null) { // skip if no episode num found
         continue;
       }
-      arrHash[strTemp] = [];    
+      arrHash[strTemp] = [];
+      episodeNumber = parseInt(episodeNumber);
+      arrHash[strTemp].push(episodeNumber);
     }
   }
-
 
 
   for(var obj in arrHash) {
 
-    if(arrHash[obj].length > 0) {
-      console.log(obj)
-      console.log(arrHash[obj]);
+    if(arrHash[obj].length > 1) { // user must have watched atleast 2 episode
+      finalAllSeries[obj] = arrHash[obj];
     }
-
   }
 
-  
+
 }
+
+
+
+// displays the series name along with next episode number
+function displayAll(finalAllSeries) {
+
+  for(var obj in finalAllSeries) {
+    document.write(obj);
+    document.write("  -> ", Math.max.apply(Math, finalAllSeries[obj]) );
+    document.write("<br><br>");
+    
+    // console.log(finalAllSeries[obj]);
+  }
+
+}
+
+
 
 chrome.history.search(
    {
@@ -142,6 +161,7 @@ chrome.history.search(
         allHistoryUrl.push(historyItems[i]["url"]);
       }
 
-        findSeries(allHistoryText, allHistoryUrl);
+      findSeries(allHistoryText, allHistoryUrl);
+      displayAll(finalAllSeries);
        
-  });
+});
