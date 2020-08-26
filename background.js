@@ -1,12 +1,8 @@
 console.log("message log go brrr");
 
 function findSeries(allHistoryText, allHistoryUrl) {
-	// main work done here
-	/*
-	 
-	*/
 
-	//	1. all plausable webpage titles which could be series series
+	// only search titles with certain keywords
 	let allHistoryText_withKeyword = [];
 	for(var i=0; i<allHistoryText.length; i++) {
 
@@ -22,27 +18,23 @@ function findSeries(allHistoryText, allHistoryUrl) {
 			allHistoryText_withKeyword.push(allHistoryText[i]);
 		}
 	}
-	//console.log(allHistoryText_withKeyword);
 
-
-	// 2. remove dublicates
+	// remove duplicates, same title searched multiple times is useless
 	//    create a set, add all element in it, convert back to array
 	let setTemp = new Set();
 	for(var i=0; i<allHistoryText_withKeyword.length; i++) {
 		setTemp.add(allHistoryText_withKeyword[i]);
 	}
 	let allHistoryText_unique = Array.from(setTemp);
-	//console.log(allHistoryText_unique);
 
 
-	// 3. elements with frequency atleast 2
-	// function which returns the last numbers from string
+	// function which returns the episode name without the last numbers
 	function episodeNameNoNum(title) {
 
 		let len = title.length;
 
-		var posEnd = -1;
-		var posStart;
+		let posEnd = -1;
+		let posStart;
 		for(var i=len-1; i>=0; i--) {
 
 			if(title[i]>='0' && title[i]<= '9' && posEnd == -1) {
@@ -64,16 +56,18 @@ function findSeries(allHistoryText, allHistoryUrl) {
 		else{
 			let episodeName = title.substring(0, posStart) + 
 							title.substring(posEnd+1, len);
-			//console.log(episodeName);
 			return episodeName;
 		}
 	}
+
+
+	// funtion that returns the last numbers from a title
 	function episodeNum(title) {
 
 		let len = title.length;
 
-		var posEnd = -1;
-		var posStart;
+		let posEnd = -1;
+		let posStart;
 		for(var i=len-1; i>=0; i--) {
 
 			if(title[i]>='0' && title[i]<= '9' && posEnd == -1) {
@@ -86,33 +80,27 @@ function findSeries(allHistoryText, allHistoryUrl) {
 			if(!(title[i]>='0' && title[i]<= '9') && posEnd != -1) {
 				break;
 			}
-
 		}
 
 		if(posEnd == -1) {
-			return null;
-			//console.log("no number found");
+			return null;	// return null since title with no ep num is useless
 		}
 		else{
-			//console.log(title.substring(posStart, posEnd+1));
 			return (title.substring(posStart, posEnd+1));
-		}
-			
+		}			
 	}
 
+
+	// the index of arrHash contains the name of the series without ep number
+	// the element present at that index is an array consisting of list of episodes
 	let arrHash = [];
 	for(var i=0; i<allHistoryText_unique.length; i++) {
-
-		//console.log(allHistoryText_unique[i]);
-		//episodeNameNoNum(allHistoryText_unique[i]);
-		//episodeNum(allHistoryText_unique[i]);
 
 		let strTemp = episodeNameNoNum(allHistoryText_unique[i]);
 		if(arrHash.hasOwnProperty(strTemp)) {
 
 			let episodeNumber = episodeNum(allHistoryText_unique[i]);
 			arrHash[strTemp].push(episodeNumber);
-			//console.log(strTemp, " ", arrHash[strTemp]);	
 		}
 		else {
 			let episodeNumber = episodeNum(allHistoryText_unique[i]);
@@ -121,8 +109,9 @@ function findSeries(allHistoryText, allHistoryUrl) {
 			}
 			arrHash[strTemp] = [];		
 		}
-
 	}
+
+
 
 	for(var obj in arrHash) {
 
@@ -139,7 +128,7 @@ function findSeries(allHistoryText, allHistoryUrl) {
 chrome.history.search(
    {
 	'text': '',
-	'maxResults': 100000,
+	'maxResults': 10000,
 	'startTime': 0
    },
 
