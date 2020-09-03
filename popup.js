@@ -1,6 +1,12 @@
 console.log("message log go brrr");
 
-var finalAllSeries = [];  // object containing list of series and its ep array
+// object whose indices is the Series name and its value is an 
+// array of the episode numbers that the user watched
+var finalAllSeries = [];
+
+// contains link of last episode
+var lastEpisodeLink = [];
+
 
 function findSeries(allHistoryText, allHistoryUrl) {
 
@@ -94,7 +100,7 @@ function findSeries(allHistoryText, allHistoryUrl) {
 
 
   // the index of arrHash contains the name of the series without ep number
-  // the element present at that index is an array consisting of list of episodes
+  // the element present at that index is an array consisting of episodes watched
   var arrHash = [];
   for(var i=0; i<allHistoryText_unique.length; i++) {
 
@@ -125,6 +131,15 @@ function findSeries(allHistoryText, allHistoryUrl) {
   }
 
 
+  // for(var obj in finalAllSeries) {
+
+  //   for(var i=0; i<allHistoryText.length; i++) {
+
+  //     if( )
+  //   }
+  // }
+
+
 }
 
 
@@ -132,16 +147,85 @@ function findSeries(allHistoryText, allHistoryUrl) {
 // displays the series name along with next episode number
 function displayAll(finalAllSeries) {
 
+  console.log("should must be finished ", lastEpisodeLink.length);
+
+  for(var i=0; i<lastEpisodeLink.length; i++) {
+    console.log(lastEpisodeLink[i], " ", typeof lastEpisodeLink[i]);
+  }
+  //console.log(lastEpisodeLink[0]);
+  var i=0;
   for(var obj in finalAllSeries) {
     document.write(obj);
     document.write("  -> ", Math.max.apply(Math, finalAllSeries[obj]) );
+    document.write("<br>");
+    //document.write(lastEpisodeLink[i]);
+    //console.log(lastEpisodeLink)
     document.write("<br><br>");
     
-    // console.log(finalAllSeries[obj]);
+    // console.log(typeof obj);
   }
 
 }
 
+
+
+
+
+// accepts a string and returns the url for it
+
+function findLastEpisodeLink_helper(title) {
+
+  console.log("start");
+  var url;
+
+  function onSuccess () {
+    console.log('Success!');
+    lastEpisodeLink.push(url);
+  }
+
+  //return new Promise(function(resolve, reject))
+  var promise = new Promise(function(resolve, reject) {
+    
+    chrome.history.search(
+     {
+      'text': title,
+      'maxResults': 1,
+      'startTime': 0
+     },
+
+    function(historyItems) {
+
+      console.log("inside");
+      url = historyItems[0]["url"];
+      // lastEpisodeLink.push(url);
+      resolve();
+
+    });
+  });
+
+  promise.then(onSuccess);
+
+  // promise.then(function(data) {
+  //   // console.log('resolved! ', data);
+  //   return data;
+  // });
+
+}
+
+// iterate through finalAllSeries, find the url for each series title and 
+// append it into lastEpisodeLink
+function findLastEpisodeLinks() {
+
+  for(var obj in finalAllSeries) {
+
+    var titleToSearch = obj+" " + Math.max.apply(Math, finalAllSeries[obj]);
+    // var url = findLastEpisodeLink_helper(titleToSearch);
+    // lastEpisodeLink.push(url);
+    findLastEpisodeLink_helper(titleToSearch);
+    // console.log(url);
+  }
+  //console.log(lastEpisodeLink.length);
+}
 
 
 chrome.history.search(
@@ -162,6 +246,11 @@ chrome.history.search(
       }
 
       findSeries(allHistoryText, allHistoryUrl);
+
+      findLastEpisodeLinks();
+
       displayAll(finalAllSeries);
+
+      console.log(lastEpisodeLink.length);
        
 });
