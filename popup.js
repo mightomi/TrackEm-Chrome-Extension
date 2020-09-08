@@ -152,8 +152,8 @@ function findSeries(allHistoryText, allHistoryUrl) {
     title += episode;
     title += strTemp;
 
-    console.log(originalTitle);
-    console.log(title);
+    // console.log(originalTitle);
+    // console.log(title);
     
     var index = allHistoryText.indexOf(title);
     // console.log(allHistoryUrl[index]);
@@ -179,23 +179,31 @@ function displayAll(finalAllSeries) {
   //   console.log(lastEpisodeLink[i], " ", typeof lastEpisodeLink[i]);
   // }
 
-  var htmlTable = "<table border='0|0'>";
+  var htmlTable = "<table>";
+  htmlTable += "<tr>";
+  htmlTable += "<th>"+" Index"+"</td>";
+  htmlTable += "<th>"+"Series Name"+"</td>";
+  htmlTable += "<th>"+"Episode "+"</td>";
+  htmlTable += "</tr>";
 
   var i=0;
   for(var obj in finalAllSeries) {
-    var lastEpisodeNum = Math.max.apply(Math, finalAllSeries[obj]);
-
-    // document.write(obj);
-    // document.write("  -> ", lastEpisodeNum);
-    // document.write("<br>");
-    // document.write(lastEpisodeLink[i]);
-    // document.write("<br><br>");
+    var episodeNumber = Math.max.apply(Math, finalAllSeries[obj]);
+    var episodeLink = lastEpisodeLink[i];
+    console.log(episodeLink);
 
     htmlTable += "<tr>";
+
+    htmlTable += "<td>"+(i+1)+"</td>";
+
     htmlTable += "<td>"+obj+"</td>";
-    htmlTable += "<td>"+lastEpisodeNum+"</td>";
+
+    htmlTable += "<td>";
+    htmlTable += "<a href="+episodeLink+' target="_blank">' + episodeNumber+"</a>";
+    htmlTable += "</td>";
+
     htmlTable += "</tr>";
-    
+
     i++;
   }
 
