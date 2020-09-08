@@ -1,8 +1,19 @@
 console.log("message log go brrr");
 
-var finalAllSeries = [];  // object containing list of series and its ep array
+// object whose indices is the Series name and its value is an 
+// array of the episode numbers that the user watched
+var finalAllSeries = [];
+
+// contains link of last episode
+var lastEpisodeLink = [];
+
 
 function findSeries(allHistoryText, allHistoryUrl) {
+
+  // first remove multiple concurrent space with one
+  for(var i=0; i<allHistoryText.length; i++) {
+    allHistoryText[i] = allHistoryText[i].replace(/  +/g, ' ');
+  }
 
   // only search titles with certain keywords
   let allHistoryText_withKeyword = [];
@@ -94,7 +105,7 @@ function findSeries(allHistoryText, allHistoryUrl) {
 
 
   // the index of arrHash contains the name of the series without ep number
-  // the element present at that index is an array consisting of list of episodes
+  // the element present at that index is an array consisting of episodes watched
   var arrHash = [];
   for(var i=0; i<allHistoryText_unique.length; i++) {
 
@@ -125,6 +136,38 @@ function findSeries(allHistoryText, allHistoryUrl) {
   }
 
 
+  // add the episode number last watched to the title and find its corresponding url
+  function getUrlLink(title, episode) {
+
+    var originalTitle = title;
+    var pos = null;
+    for(var i=0; i<title.length-1; i++) {   // use multiple space as a indication
+      if(title.charAt(i) == ' ' && title.charAt(i+1) == ' ') {
+        pos = i;
+      }
+    }
+
+    var strTemp = title.substring(pos+1, title.length);
+    title = title.substring(0, pos+1);
+    title += episode;
+    title += strTemp;
+
+    console.log(originalTitle);
+    console.log(title);
+    
+    var index = allHistoryText.indexOf(title);
+    // console.log(allHistoryUrl[index]);
+    return allHistoryUrl[index];
+  }
+
+
+  for(var obj in finalAllSeries) {
+    // url of the highest episode ever watch
+    var url = getUrlLink(obj, Math.max.apply(Math, finalAllSeries[obj])); 
+    lastEpisodeLink.push(url);
+  }
+
+
 }
 
 
@@ -132,26 +175,48 @@ function findSeries(allHistoryText, allHistoryUrl) {
 // displays the series name along with next episode number
 function displayAll(finalAllSeries) {
 
+  // for(var i=0; i<lastEpisodeLink.length; i++) {
+  //   console.log(lastEpisodeLink[i], " ", typeof lastEpisodeLink[i]);
+  // }
+
+  var htmlTable = "<table border='0|0'>";
+
+  var i=0;
   for(var obj in finalAllSeries) {
-    document.write(obj);
-    document.write("  -> ", Math.max.apply(Math, finalAllSeries[obj]) );
-    document.write("<br><br>");
+    var lastEpisodeNum = Math.max.apply(Math, finalAllSeries[obj]);
+
+    // document.write(obj);
+    // document.write("  -> ", lastEpisodeNum);
+    // document.write("<br>");
+    // document.write(lastEpisodeLink[i]);
+    // document.write("<br><br>");
+
+    htmlTable += "<tr>";
+    htmlTable += "<td>"+obj+"</td>";
+    htmlTable += "<td>"+lastEpisodeNum+"</td>";
+    htmlTable += "</tr>";
     
-    // console.log(finalAllSeries[obj]);
+    i++;
   }
 
+  htmlTable += "</table>";
+
+
+  document.getElementById("mainTable").innerHTML = htmlTable;
+
 }
+
 
 
 
 chrome.history.search(
    {
   'text': '',
-  'maxResults': 10000,
+  'maxResults': 0,
   'startTime': 0
    },
 
-   function(historyItems) {
+  function(historyItems) {
 
       var allHistoryText = [];
       var allHistoryUrl = [];
@@ -162,6 +227,7 @@ chrome.history.search(
       }
 
       findSeries(allHistoryText, allHistoryUrl);
+
       displayAll(finalAllSeries);
        
 });
