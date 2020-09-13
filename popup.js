@@ -1,11 +1,13 @@
-console.log("message log go brrr");
+
 
 // object whose indices is the Series name and its value is an 
 // array of the episode numbers that the user watched
-var finalAllSeries = [];
+var finalAllSeries = {};
 
 // contains link of last episode
 var lastEpisodeLink = [];
+
+var userTitle = {};
 
 
 function findSeries(allHistoryText, allHistoryUrl) {
@@ -172,6 +174,37 @@ function findSeries(allHistoryText, allHistoryUrl) {
 
 
 
+// initialize userTitle if found in storage
+var boolGotUserTitle = true
+async function getUserTitle() {
+
+  await chrome.storage.local.get(["userTitle"], function(result) {
+
+      if(result.userTitle == null) {
+        console.log("not found last title creating one");
+        boolGotUserTitle = false;
+        // writeUserTitle is called then
+      } else {
+        console.log("titiel fuond", result.userTitle);
+        userTitle = result.userTitle;
+      }
+  });
+}
+getUserTitle();
+
+// if not found then htis is called by displayall
+async function writeUserTitle() {
+
+  await chrome.storage.local.set({userTitle: userTitle}, function() {
+    console.log('success written');
+  });
+
+}
+
+
+
+
+
 // displays the series name along with next episode number
 function displayAll(finalAllSeries) {
 
@@ -179,24 +212,42 @@ function displayAll(finalAllSeries) {
   //   console.log(lastEpisodeLink[i], " ", typeof lastEpisodeLink[i]);
   // }
 
+
+  // if not found the userTitle in storage 
+  if(!boolGotUserTitle) {
+
+    // putting value in userTitle to writing in storage
+    for(var obj in finalAllSeries) {
+      userTitle[obj] = obj;
+    }
+    writeUserTitle();
+  }
+
+  console.log("plz be ready before this");
+
+
+
+
   var htmlTable = "<table>";
+
   htmlTable += "<tr>";
   htmlTable += "<th>"+" Index"+"</td>";
   htmlTable += "<th>"+"Series Name"+"</td>";
-  htmlTable += "<th>"+"Episode "+"</td>";
+  htmlTable += "<th>"+"Episode Left At"+"</td>";
   htmlTable += "</tr>";
 
   var i=0;
   for(var obj in finalAllSeries) {
     var episodeNumber = Math.max.apply(Math, finalAllSeries[obj]);
     var episodeLink = lastEpisodeLink[i];
-    console.log(episodeLink);
+    // console.log(episodeLink);
 
     htmlTable += "<tr>";
 
     htmlTable += "<td>"+(i+1)+"</td>";
 
-    htmlTable += "<td>"+obj+"</td>";
+    var idTemp = "seriesName"+i;    // every series name has a id of this form
+    htmlTable += "<td contenteditable id ="+idTemp+">" +userTitle[obj]+ "</td>";
 
     htmlTable += "<td>";
     htmlTable += "<a href="+episodeLink+' target="_blank">' + episodeNumber+"</a>";
@@ -212,7 +263,27 @@ function displayAll(finalAllSeries) {
 
   document.getElementById("mainTable").innerHTML = htmlTable;
 
+
+
+  var len = Object.keys(finalAllSeries).length;
+
+  for(let i=0; i<len; i++) {
+    document.getElementById("seriesName"+i).addEventListener("input", function() {
+        console.log("input event fired");
+        console.log(document.getElementById('seriesName'+i));
+        // do something important with new data
+    }, false);
+  }
+
+  // document.getElementById("seriesName1").addEventListener("input", function() {
+  //     console.log("input event fired");
+  //     console.log(document.getElementById('seriesName1'));
+  //     // do something important with new data
+  // }, false);
+
+
 }
+
 
 
 
