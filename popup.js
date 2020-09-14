@@ -7,7 +7,7 @@ var finalAllSeries = {};
 // contains link of last episode
 var lastEpisodeLink = [];
 
-var userTitle = {};
+var userTitle = [];
 
 
 function findSeries(allHistoryText, allHistoryUrl) {
@@ -218,10 +218,11 @@ function displayAll(finalAllSeries) {
 
     // putting value in userTitle to writing in storage
     for(var obj in finalAllSeries) {
-      userTitle[obj] = obj;
+      userTitle.push(obj);
     }
     writeUserTitle();
   }
+
 
   console.log("plz be ready before this");
 
@@ -247,7 +248,7 @@ function displayAll(finalAllSeries) {
     htmlTable += "<td>"+(i+1)+"</td>";
 
     var idTemp = "seriesName"+i;    // every series name has a id of this form
-    htmlTable += "<td contenteditable id ="+idTemp+">" +userTitle[obj]+ "</td>";
+    htmlTable += "<td contenteditable id ="+idTemp+">" +userTitle[i]+ "</td>";
 
     htmlTable += "<td>";
     htmlTable += "<a href="+episodeLink+' target="_blank">' + episodeNumber+"</a>";
@@ -265,23 +266,19 @@ function displayAll(finalAllSeries) {
 
 
 
+
   var len = Object.keys(finalAllSeries).length;
 
   for(let i=0; i<len; i++) {
     document.getElementById("seriesName"+i).addEventListener("input", function() {
         console.log("input event fired");
-        console.log(document.getElementById('seriesName'+i));
-        // do something important with new data
+        console.log(document.getElementById('seriesName'+i).innerHTML);
+        userTitle[i] = document.getElementById('seriesName'+i).innerHTML;
+        writeUserTitle();
     }, false);
   }
 
-  // document.getElementById("seriesName1").addEventListener("input", function() {
-  //     console.log("input event fired");
-  //     console.log(document.getElementById('seriesName1'));
-  //     // do something important with new data
-  // }, false);
-
-
+  
 }
 
 
