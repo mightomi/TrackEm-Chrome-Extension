@@ -7,13 +7,21 @@ var finalAllSeries = {};
 // contains link of last episode
 var lastEpisodeLink = [];
 
-var userTitle = [];
+// object which key originalTitle and value 'the title user want to show'
+var userTitle = {};
+
+// object with key originalTitle and bool value true if user want to display it else false
+var showTitle = {};
+
 
 
 function findSeries(allHistoryText, allHistoryUrl) {
 
-  // first remove multiple concurrent space with one
+
+  // add space btw number and letter 
+  // remove multiple concurrent space with one space
   for(var i=0; i<allHistoryText.length; i++) {
+    allHistoryText[i] = allHistoryText[i].replace(/[^0-9](?=[0-9])/g, '$& ')
     allHistoryText[i] = allHistoryText[i].replace(/  +/g, ' ');
   }
 
@@ -175,28 +183,30 @@ function findSeries(allHistoryText, allHistoryUrl) {
 
 
 // initialize userTitle if found in storage
-var boolGotUserTitle = true
-async function getUserTitle() {
+function getUserData() {
 
-  await chrome.storage.local.get(["userTitle"], function(result) {
+  chrome.storage.local.get(["userTitle", "showTitle"], function(result) {
 
-      if(result.userTitle == null) {
-        console.log("not found last title creating one");
-        boolGotUserTitle = false;
-        // writeUserTitle is called then
+      if(result.userTitle == null || result.showTitle == null) {
+        console.log("not found userTitle and showTitle creating one");
+        // userTitle and showTitle is then filled in displayall()
       } else {
-        console.log("titiel fuond", result.userTitle);
+        console.log("user title, showTitle found", result.userTitle, result.showTitle);
         userTitle = result.userTitle;
+        showTitle = result.showTitle;
       }
   });
 }
-getUserTitle();
+getUserData();
 
 // if not found then htis is called by displayall
-async function writeUserTitle() {
+function writeUserData() {
 
-  await chrome.storage.local.set({userTitle: userTitle}, function() {
-    console.log('success written');
+  chrome.storage.local.set({userTitle: userTitle}, function() {
+    console.log('success written userTitle');
+  });
+  chrome.storage.local.set({showTitle: showTitle}, function() {
+    console.log('success written showTitle');
   });
 
 }
@@ -205,26 +215,20 @@ async function writeUserTitle() {
 
 
 
-// displays the series name along with next episode number
-function displayAll(finalAllSeries) {
-
-  // for(var i=0; i<lastEpisodeLink.length; i++) {
-  //   console.log(lastEpisodeLink[i], " ", typeof lastEpisodeLink[i]);
-  // }
+// All display stuff done here
+function displayAll() {
 
 
-  // if not found the userTitle in storage 
-  if(!boolGotUserTitle) {
-
-    // putting value in userTitle to writing in storage
-    for(var obj in finalAllSeries) {
-      userTitle.push(obj);
-    }
-    writeUserTitle();
+  // if userTitle[obj] not found in storage it means its a new entry  so 
+  // adding it
+  for(var obj in finalAllSeries) {
+    if(userTitle[obj] == null)
+      userTitle[obj] = obj;
+    if(showTitle[obj] == null)
+      showTitle[obj] = true;
   }
-
-
-  console.log("plz be ready before this");
+  writeUserData();
+  
 
 
 
@@ -238,8 +242,8 @@ function displayAll(finalAllSeries) {
   htmlTable += "</tr>";
 
   var i=0;
-  for(var obj in finalAllSeries) {
-    var episodeNumber = Math.max.apply(Math, finalAllSeries[obj]);
+  for(var actualTitle in finalAllSeries) {
+    var episodeNumber = Math.max.apply(Math, finalAllSeries[actualTitle]);
     var episodeLink = lastEpisodeLink[i];
     // console.log(episodeLink);
 
@@ -248,7 +252,7 @@ function displayAll(finalAllSeries) {
     htmlTable += "<td>"+(i+1)+"</td>";
 
     var idTemp = "seriesName"+i;    // every series name has a id of this form
-    htmlTable += "<td contenteditable id ="+idTemp+">" +userTitle[i]+ "</td>";
+    htmlTable += "<td contenteditable id ="+idTemp+">" +userTitle[actualTitle]+ "</td>";
 
     htmlTable += "<td>";
     htmlTable += "<a href="+episodeLink+' target="_blank">' + episodeNumber+"</a>";
@@ -267,15 +271,33 @@ function displayAll(finalAllSeries) {
 
 
 
+
   var len = Object.keys(finalAllSeries).length;
 
+  // for every title add a event listener to it
   for(let i=0; i<len; i++) {
+
     document.getElementById("seriesName"+i).addEventListener("input", function() {
-        console.log("input event fired");
-        console.log(document.getElementById('seriesName'+i).innerHTML);
-        userTitle[i] = document.getElementById('seriesName'+i).innerHTML;
-        writeUserTitle();
+
+      // this function is called whenever the user changes any title
+      // finalAllSeries is itterated i times so as to find originalTitle
+      // originalTitle is used as a key and the value userTitle[originalTitle] 
+      // is changed to the new value inputted by user
+      console.log("edited to ", document.getElementById('seriesName'+i).innerHTML);
+
+      var j = 0;
+      for(var originalTitle in finalAllSeries) {
+        if(j == i) {
+          userTitle[originalTitle] = document.getElementById('seriesName'+i).innerHTML;
+          break;
+        }
+        j++;
+      }
+      writeUserData();
+
     }, false);
+
+
   }
 
   
@@ -304,6 +326,6 @@ chrome.history.search(
 
       findSeries(allHistoryText, allHistoryUrl);
 
-      displayAll(finalAllSeries);
+      displayAll();
        
 });
