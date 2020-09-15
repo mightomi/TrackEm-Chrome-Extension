@@ -185,7 +185,7 @@ function findSeries(allHistoryText, allHistoryUrl) {
 // initialize userTitle if found in storage
 function getUserData() {
 
-  chrome.storage.local.get(["userTitle", "showTitle"], function(result) {
+  chrome.storage.sync.get(["userTitle", "showTitle"], function(result) {
 
       if(result.userTitle == null || result.showTitle == null) {
         console.log("not found userTitle and showTitle creating one");
@@ -202,10 +202,10 @@ getUserData();
 // if not found then htis is called by displayall
 function writeUserData() {
 
-  chrome.storage.local.set({userTitle: userTitle}, function() {
+  chrome.storage.sync.set({userTitle: userTitle}, function() {
     console.log('success written userTitle');
   });
-  chrome.storage.local.set({showTitle: showTitle}, function() {
+  chrome.storage.sync.set({showTitle: showTitle}, function() {
     console.log('success written showTitle');
   });
 
@@ -239,23 +239,38 @@ function displayAll() {
   htmlTable += "<th>"+" Index"+"</td>";
   htmlTable += "<th>"+"Series Name"+"</td>";
   htmlTable += "<th>"+"Episode Left At"+"</td>";
+  htmlTable += "<th>";
+  htmlTable += "<button type='button' id = "+"button_resetAll"+"> Reset All </button>";
+  htmlTable += +"</th>";
   htmlTable += "</tr>";
 
   var i=0;
+  var index = 1;
   for(var actualTitle in finalAllSeries) {
+
+    if(!showTitle[actualTitle]) {
+      i++;
+      continue;
+    }
+
     var episodeNumber = Math.max.apply(Math, finalAllSeries[actualTitle]);
     var episodeLink = lastEpisodeLink[i];
     // console.log(episodeLink);
 
     htmlTable += "<tr>";
 
-    htmlTable += "<td>"+(i+1)+"</td>";
+    htmlTable += "<td>"+(index++)+"</td>";
 
-    var idTemp = "seriesName"+i;    // every series name has a id of this form
-    htmlTable += "<td contenteditable id ="+idTemp+">" +userTitle[actualTitle]+ "</td>";
+    var idTitleTemp = "seriesName"+i;    // every series name has a id of this form
+    htmlTable += "<td contenteditable id ="+idTitleTemp+">" +userTitle[actualTitle]+ "</td>";
 
     htmlTable += "<td>";
     htmlTable += "<a href="+episodeLink+' target="_blank">' + episodeNumber+"</a>";
+    htmlTable += "</td>";
+
+    htmlTable += "<td>";
+    var idButtonTemp = "button"+i;
+    htmlTable += "<button type='button' id = "+idButtonTemp+"> Remove this </button>";
     htmlTable += "</td>";
 
     htmlTable += "</tr>";
@@ -274,8 +289,17 @@ function displayAll() {
 
   var len = Object.keys(finalAllSeries).length;
 
-  // for every title add a event listener to it
+  // for listener to title and remove button
   for(let i=0; i<len; i++) {
+
+    // skip adding a listener if button was not created
+    try {
+      document.getElementById('seriesName'+i).innerHTML;
+      document.getElementById("button"+i)
+    }
+    catch(err) {
+      continue;
+    }
 
     document.getElementById("seriesName"+i).addEventListener("input", function() {
 
@@ -297,8 +321,39 @@ function displayAll() {
 
     }, false);
 
+    document.getElementById("button"+i).addEventListener("click", function() {
+
+      // this function is called whenever the user clicks on the remove botton
+      // same idea as seriesName 
+      console.log("clicked ", i);
+
+      var j = 0;
+      for(var originalTitle in finalAllSeries) {
+        if(j == i) {
+          showTitle[originalTitle] = false;
+          break;
+        }
+        j++;
+      }
+      writeUserData();
+
+    }, false);
+
 
   }
+
+  // listener to reset all button
+  document.getElementById("button_resetAll").addEventListener("click", function() {
+
+    console.log("clicked reset button");
+
+    userTitle = {};
+    showTitle = {};
+    writeUserData();
+
+  }, false);
+
+
 
   
 }
