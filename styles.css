@@ -1,0 +1,52 @@
+.remove {
+  /*position: absolute;*/
+  /*right: 32px;*/
+  top: 32px;
+  width: 32px;
+  height: 32px;
+  opacity: 0.3;
+}
+.remove:hover {
+  opacity: 1;
+}
+.remove:before, .remove:after {
+  /*position: absolute;*/
+  /*left: 15px;*/
+  content: ' ';
+  height: 33px;
+  width: 2px;
+  background-color: #333;
+}
+.remove:before {
+  transform: rotate(45deg);
+}
+.remove:after {
+  transform: rotate(-45deg);
+}
+
+
+.reset {
+  /*position: absolute;*/
+  right: 32px;
+  top: 32px;
+  width: 52px;
+  height: 38px;
+  opacity: 0.8;
+}
+.reset:hover {
+  opacity: 1;
+}
+.reset:before, .reset:after {
+  /*position: absolute;*/
+  /*left: 15px;*/
+  content: ' ';
+/*  height: 33px;
+  width: 2px;
+*/  background-color: #333;
+}
+.reset:before {
+  transform: rotate(45deg);
+}
+.reset:after {
+  transform: rotate(-45deg);
+}

@@ -240,8 +240,8 @@ function displayAll() {
   htmlTable += "<th>"+"Series Name"+"</td>";
   htmlTable += "<th>"+"Episode Left At"+"</td>";
   htmlTable += "<th>";
-  htmlTable += "<button type='button' id = "+"button_resetAll"+"> Reset All </button>";
-  htmlTable += +"</th>";
+  htmlTable += "<button type='button' class = 'reset' id = "+"button_resetAll"+"> Reset All</button>";
+  htmlTable += "</th>";
   htmlTable += "</tr>";
 
   var i=0;
@@ -270,7 +270,7 @@ function displayAll() {
 
     htmlTable += "<td>";
     var idButtonTemp = "button"+i;
-    htmlTable += "<button type='button' id = "+idButtonTemp+"> Remove this </button>";
+    htmlTable += "<button type='button' class = 'remove' id = "+idButtonTemp+">X</button>";
     htmlTable += "</td>";
 
     htmlTable += "</tr>";
