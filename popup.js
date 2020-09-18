@@ -18,12 +18,30 @@ var showTitle = {};
 function findSeries(allHistoryText, allHistoryUrl) {
 
 
-  // add space btw number and letter 
-  // remove multiple concurrent space with one space
+  // pre-editing the title
   for(var i=0; i<allHistoryText.length; i++) {
+  
+    // add space btw letter and other character
+    var tempStr = "";
+    for(var j=0; j<allHistoryText[i].length; j++) {
+      // if speacial character then add space before and after it
+      if(allHistoryText[i][j].toUpperCase() == allHistoryText[i][j].toLowerCase()
+        && !(allHistoryText[i][j] >= '0' && allHistoryText[i][j] <= '9')) {
+        tempStr += " " + allHistoryText[i][j] + " ";
+      } else {
+        tempStr += allHistoryText[i][j];
+      }
+    }
+    allHistoryText[i] = tempStr;
+
+    // add space before and after numbers
     allHistoryText[i] = allHistoryText[i].replace(/[^0-9](?=[0-9])/g, '$& ')
+
+    // remove multiple concurrent space with one space
     allHistoryText[i] = allHistoryText[i].replace(/  +/g, ' ');
+
   }
+
 
   // only search titles with certain keywords
   let allHistoryText_withKeyword = [];
