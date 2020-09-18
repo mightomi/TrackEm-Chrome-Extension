@@ -36,7 +36,11 @@ function findSeries(allHistoryText, allHistoryUrl) {
        allHistoryText[i].includes("episode") ||
        allHistoryText[i].includes("Season") ||
        allHistoryText[i].includes("season") ||
-       allHistoryText[i].includes("Chapter")
+       allHistoryText[i].includes("Chapter") ||
+       allHistoryText[i].includes("chapter") ||
+       allHistoryText[i].includes("Manga") ||
+       allHistoryText[i].includes("manga")
+
     ) {
 
       allHistoryText_withKeyword.push(allHistoryText[i]);
