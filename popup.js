@@ -13,6 +13,10 @@ var userTitle = {};
 // object with key originalTitle and bool value true if user want to display it else false
 var showTitle = {};
 
+// stores the index which are deleted, used in dynamically removing row from popup
+var deletedIndex = [];
+
+
 
 
 function findSeries(allHistoryText, allHistoryUrl) {
@@ -210,32 +214,28 @@ function findSeries(allHistoryText, allHistoryUrl) {
 // initialize userTitle if found in storage
 function getUserData() {
 
-  chrome.storage.sync.get(["userTitle", "showTitle"], function(result) {
+  chrome.storage.sync.get(["userTitle", "showTitle", "deletedIndex"], function(result) {
 
-      if(result.userTitle == null || result.showTitle == null) {
-        console.log("not found userTitle and showTitle creating one");
-        // userTitle and showTitle is then filled in displayall()
+      if(result.userTitle == null) {
+        console.log("not found userTitle showTitle, deletedIndex");
+        // userTitle, showTitle, deletedIndex is then initialised in displayall()
       } else {
-        console.log("user title, showTitle found", result.userTitle, result.showTitle);
+        console.log("user title, showTitle, deletedindex found", result.userTitle, result.showTitle, result.deletedIndex);
         userTitle = result.userTitle;
         showTitle = result.showTitle;
+        deletedIndex = result.deletedIndex;
       }
   });
 }
 getUserData();
 
-// if not found then htis is called by displayall
+// if not found then this is called by displayall
 function writeUserData() {
 
-  chrome.storage.sync.set({userTitle: userTitle}, function() {
-    console.log('success written userTitle');
+  chrome.storage.sync.set({userTitle: userTitle, showTitle: showTitle, deletedIndex: deletedIndex}, function() {
+    console.log('Successfully written to storage');
   });
-  chrome.storage.sync.set({showTitle: showTitle}, function() {
-    console.log('success written showTitle');
-  });
-
 }
-
 
 
 
@@ -257,56 +257,59 @@ function displayAll() {
 
 
 
+  function displayHtmlTable() {
 
-  var htmlTable = "<table>";
-
-  htmlTable += "<tr>";
-  htmlTable += "<th>"+" Index"+"</td>";
-  htmlTable += "<th>"+"Series Name"+"</td>";
-  htmlTable += "<th>"+"Episode Left At"+"</td>";
-  htmlTable += "<th>";
-  htmlTable += "<button type='button' class = 'reset' id = "+"button_resetAll"+"> Reset All</button>";
-  htmlTable += "</th>";
-  htmlTable += "</tr>";
-
-  var i=0;
-  var index = 1;
-  for(var actualTitle in finalAllSeries) {
-
-    if(!showTitle[actualTitle]) {
-      i++;
-      continue;
-    }
-
-    var episodeNumber = Math.max.apply(Math, finalAllSeries[actualTitle]);
-    var episodeLink = lastEpisodeLink[i];
-    // console.log(episodeLink);
+    var htmlTable = "<table id='mainTableId'>";
 
     htmlTable += "<tr>";
-
-    htmlTable += "<td>"+(index++)+"</td>";
-
-    var idTitleTemp = "seriesName"+i;    // every series name has a id of this form
-    htmlTable += "<td contenteditable id ="+idTitleTemp+">" +userTitle[actualTitle]+ "</td>";
-
-    htmlTable += "<td>";
-    htmlTable += "<a href="+episodeLink+' target="_blank">' + episodeNumber+"</a>";
-    htmlTable += "</td>";
-
-    htmlTable += "<td>";
-    var idButtonTemp = "button"+i;
-    htmlTable += "<button type='button' class = 'remove' id = "+idButtonTemp+">X</button>";
-    htmlTable += "</td>";
-
+    htmlTable += "<th>"+" Index"+"</td>";
+    htmlTable += "<th>"+"Series Name"+"</td>";
+    htmlTable += "<th>"+"Episode Left At"+"</td>";
+    htmlTable += "<th>";
+    htmlTable += "<button type='button' class = 'reset' id = "+"button_resetAll"+"> Reset All</button>";
+    htmlTable += "</th>";
     htmlTable += "</tr>";
 
-    i++;
+    var i=0;
+    var index = 1;
+    for(var actualTitle in finalAllSeries) {
+
+      if(!showTitle[actualTitle]) {
+        i++;
+        continue;
+      }
+
+      var episodeNumber = Math.max.apply(Math, finalAllSeries[actualTitle]);
+      var episodeLink = lastEpisodeLink[i];
+      // console.log(episodeLink);
+
+      htmlTable += "<tr>";
+
+      htmlTable += "<td>"+(index++)+"</td>";
+
+      var idTitleTemp = "seriesName"+i;    // every series name has a id of this form
+      htmlTable += "<td contenteditable id ="+idTitleTemp+">" +userTitle[actualTitle]+ "</td>";
+
+      htmlTable += "<td>";
+      htmlTable += "<a href="+episodeLink+' target="_blank">' + episodeNumber+"</a>";
+      htmlTable += "</td>";
+
+      htmlTable += "<td>";
+      var idButtonTemp = "button"+i;
+      htmlTable += "<button type='button' class = 'remove' id = "+idButtonTemp+">X</button>";
+      htmlTable += "</td>";
+
+      htmlTable += "</tr>";
+
+      i++;
+    }
+
+    htmlTable += "</table>";
+
+
+    document.getElementById("mainTable").innerHTML = htmlTable;
   }
-
-  htmlTable += "</table>";
-
-
-  document.getElementById("mainTable").innerHTML = htmlTable;
+  displayHtmlTable();
 
 
 
@@ -314,7 +317,7 @@ function displayAll() {
 
   var len = Object.keys(finalAllSeries).length;
 
-  // for listener to title and remove button
+  // adding listener to title and remove button
   for(let i=0; i<len; i++) {
 
     // skip adding a listener if button was not created
@@ -326,14 +329,15 @@ function displayAll() {
       continue;
     }
 
+
+    // this function is called whenever the user edits title
     document.getElementById("seriesName"+i).addEventListener("input", function() {
 
-      // this function is called whenever the user changes any title
+      console.log("Edited to ", document.getElementById('seriesName'+i).innerHTML);
+
       // finalAllSeries is itterated i times so as to find originalTitle
       // originalTitle is used as a key and the value userTitle[originalTitle] 
       // is changed to the new value inputted by user
-      console.log("edited to ", document.getElementById('seriesName'+i).innerHTML);
-
       var j = 0;
       for(var originalTitle in finalAllSeries) {
         if(j == i) {
@@ -346,12 +350,13 @@ function displayAll() {
 
     }, false);
 
+
+    // this function is called whenever the user clicks on the remove botton
     document.getElementById("button"+i).addEventListener("click", function() {
 
-      // this function is called whenever the user clicks on the remove botton
-      // same idea as seriesName 
-      console.log("clicked ", i);
+      // console.log("clicked ", i+1);
 
+      // same idea as seriesName 
       var j = 0;
       for(var originalTitle in finalAllSeries) {
         if(j == i) {
@@ -360,12 +365,26 @@ function displayAll() {
         }
         j++;
       }
+
+      // removing the row entry from popup
+      var tempIndex = i;
+      for(var k=0; k<deletedIndex.length; k++) {
+        if(deletedIndex[k]<i)
+          tempIndex--;
+      }
+
+      document.getElementById("mainTableId").deleteRow(tempIndex+1);
+      // console.log("deleting", tempIndex+1);
+
+      deletedIndex.push(i);
+
       writeUserData();
 
     }, false);
 
 
   }
+
 
   // listener to reset all button
   document.getElementById("button_resetAll").addEventListener("click", function() {
@@ -374,7 +393,13 @@ function displayAll() {
 
     userTitle = {};
     showTitle = {};
+    deletedIndex = [];
     writeUserData();
+
+    var Table = document.getElementById("mainTableId");
+    Table.innerHTML = "";
+    displayHtmlTable();
+
 
   }, false);
 
