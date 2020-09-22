@@ -398,7 +398,7 @@ function displayAll() {
 
     var Table = document.getElementById("mainTableId");
     Table.innerHTML = "";
-    displayHtmlTable();
+    displayAll();
 
 
   }, false);
