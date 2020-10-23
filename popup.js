@@ -25,7 +25,7 @@ function findSeries(allHistoryText, allHistoryUrl) {
   // pre-editing the title
   for(var i=0; i<allHistoryText.length; i++) {
   
-    // add space btw letter and other character
+    // add space btw words and other character
     var tempStr = "";
     for(var j=0; j<allHistoryText[i].length; j++) {
       // if speacial character then add space before and after it
@@ -46,8 +46,10 @@ function findSeries(allHistoryText, allHistoryUrl) {
 
   }
 
+  // console.log(allHistoryText.length);
 
-  // only search titles with certain keywords
+  // only search titles with certain keywords, if keyword is found then 
+  // remove all characters after the last number
   let allHistoryText_withKeyword = [];
   for(var i=0; i<allHistoryText.length; i++) {
 
@@ -67,6 +69,18 @@ function findSeries(allHistoryText, allHistoryUrl) {
 
     ) {
 
+      for(var j=allHistoryText.length -1; j>=0; j--){
+
+        if(allHistoryText[i][j] >= '0' && allHistoryText[i][j] <= '9') {
+
+          // console.log(allHistoryText[i]);
+          allHistoryText[i] = allHistoryText[i].substring(0, j+1) + ' ';
+          // console.log(allHistoryText[i]);
+
+          break;
+        }
+      }
+
       allHistoryText_withKeyword.push(allHistoryText[i]);
     }
   }
@@ -78,6 +92,7 @@ function findSeries(allHistoryText, allHistoryUrl) {
     setTemp.add(allHistoryText_withKeyword[i]);
   }
   let allHistoryText_unique = Array.from(setTemp);
+  // console.log(allHistoryText_unique);
 
 
   // function which returns the episode name without the last numbers
@@ -108,6 +123,7 @@ function findSeries(allHistoryText, allHistoryUrl) {
     else{
       let episodeName = title.substring(0, posStart) + 
               title.substring(posEnd+1, len);
+      // console.log(title, "\n", episodeName);
       return episodeName;
     }
   }
@@ -149,14 +165,21 @@ function findSeries(allHistoryText, allHistoryUrl) {
   for(var i=0; i<allHistoryText_unique.length; i++) {
 
     let strTemp = episodeNameNoNum(allHistoryText_unique[i]);
+    let episodeNumber = episodeNum(allHistoryText_unique[i]);
+
+    if(strTemp == ' ') { // skip if title is empty after removing episode number
+      continue;
+      // console.log(strTemp);
+    }
+
     if(arrHash.hasOwnProperty(strTemp)) {
 
-      let episodeNumber = episodeNum(allHistoryText_unique[i]);
+      
       episodeNumber = parseInt(episodeNumber);
       arrHash[strTemp].push(episodeNumber);
     }
+
     else {
-      let episodeNumber = episodeNum(allHistoryText_unique[i]);
       if(episodeNumber == null) { // skip if no episode num found
         continue;
       }
@@ -180,7 +203,7 @@ function findSeries(allHistoryText, allHistoryUrl) {
 
     var originalTitle = title;
     var pos = null;
-    for(var i=0; i<title.length-1; i++) {   // use multiple space as a indication
+    for(var i=0; i<title.length-1; i++) {   // use 2 space as a indication
       if(title.charAt(i) == ' ' && title.charAt(i+1) == ' ') {
         pos = i;
       }
