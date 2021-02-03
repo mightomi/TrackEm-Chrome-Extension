@@ -4,6 +4,9 @@
   "description": "Automatically keep tracks of all your TV-Series and anime ",
   "version": "0.1",
   "icons": {"128": "icon.png"},
+
+  "content_security_policy": "script-src 'self' https://ajax.googleapis.com; object-src 'self'",
+
   "content_scripts": [
     {
       "matches": ["<all_urls>"],
