@@ -16,6 +16,27 @@ var showTitle = {};
 
 
 
+// initialize userTitle if found in storage
+function getUserData() {
+
+  chrome.storage.sync.get(["userTitle", "showTitle"], function(result) {
+
+      if(result.userTitle == null) {
+        console.log("not found userTitle and showTitle");
+        // userTitle, showTitle, is then initialised in displayall()
+      } else {
+        console.log("user title, showTitle, found", result.userTitle, result.showTitle);
+        userTitle = result.userTitle;
+        showTitle = result.showTitle;
+      }
+
+      // call main only after we are done checking the Userdata stored in the storage
+      main();
+  });
+}
+getUserData();
+
+
 
 function findSeries(allHistoryText, allHistoryUrl) {
 
@@ -232,22 +253,6 @@ function findSeries(allHistoryText, allHistoryUrl) {
 
 
 
-// initialize userTitle if found in storage
-function getUserData() {
-
-  chrome.storage.sync.get(["userTitle", "showTitle"], function(result) {
-
-      if(result.userTitle == null) {
-        console.log("not found userTitle and showTitle");
-        // userTitle, showTitle, is then initialised in displayall()
-      } else {
-        console.log("user title, showTitle, found", result.userTitle, result.showTitle);
-        userTitle = result.userTitle;
-        showTitle = result.showTitle;
-      }
-  });
-}
-getUserData();
 
 // if not found then this is called by displayall
 function writeUserData() {
@@ -417,26 +422,29 @@ function displayAll() {
 
 
 
+function main() {
 
-chrome.history.search(
-   {
-  'text': '',
-  'maxResults': 0,
-  'startTime': 0
-   },
 
-  function(historyItems) {
+  chrome.history.search(
+     {
+    'text': '',
+    'maxResults': 0,
+    'startTime': 0
+     },
 
-      var allHistoryText = [];
-      var allHistoryUrl = [];
+    function(historyItems) {
 
-      for(var i=0; i<historyItems.length; i++) {
-        allHistoryText.push(historyItems[i]["title"]);
-        allHistoryUrl.push(historyItems[i]["url"]);
-      }
+        var allHistoryText = [];
+        var allHistoryUrl = [];
 
-      findSeries(allHistoryText, allHistoryUrl);
+        for(var i=0; i<historyItems.length; i++) {
+          allHistoryText.push(historyItems[i]["title"]);
+          allHistoryUrl.push(historyItems[i]["url"]);
+        }
 
-      displayAll();
-       
-});
+        findSeries(allHistoryText, allHistoryUrl);
+
+        displayAll();
+         
+  });
+}
