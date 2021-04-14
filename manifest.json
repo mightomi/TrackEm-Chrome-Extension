@@ -1,8 +1,8 @@
 {
   "manifest_version": 2,
-  "name": "Track-IT",
-  "description": "Automatically keep tracks of all your TV-Series and anime ",
-  "version": "0.1",
+  "name": "TrackEm - Automatic TV-Series, Anime, Manga Tracker",
+  "description": "Automatically keeps tracks of all your TV-Series, Anime, Manga, Light-Novel, or Tutorials. ",
+  "version": "1.0",
   "icons": {"128": "icon.png"},
   "content_scripts": [
     {
