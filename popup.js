@@ -13,9 +13,28 @@ var userTitle = {};
 // object with key originalTitle and bool value true if user want to display it else false
 var showTitle = {};
 
-// stores the index which are deleted, used in dynamically removing row from popup
-var deletedIndex = [];
 
+
+
+// initialize userTitle if found in storage
+function getUserData() {
+
+  chrome.storage.sync.get(["userTitle", "showTitle"], function(result) {
+
+      if(result.userTitle == null) {
+        console.log("not found userTitle and showTitle");
+        // userTitle, showTitle, is then initialised in displayall()
+      } else {
+        console.log("user title, showTitle, found", result.userTitle, result.showTitle);
+        userTitle = result.userTitle;
+        showTitle = result.showTitle;
+      }
+
+      // call main only after we are done checking the Userdata stored in the storage
+      main();
+  });
+}
+getUserData();
 
 
 
@@ -234,28 +253,11 @@ function findSeries(allHistoryText, allHistoryUrl) {
 
 
 
-// initialize userTitle if found in storage
-function getUserData() {
-
-  chrome.storage.sync.get(["userTitle", "showTitle", "deletedIndex"], function(result) {
-
-      if(result.userTitle == null) {
-        console.log("not found userTitle showTitle, deletedIndex");
-        // userTitle, showTitle, deletedIndex is then initialised in displayall()
-      } else {
-        console.log("user title, showTitle, deletedindex found", result.userTitle, result.showTitle, result.deletedIndex);
-        userTitle = result.userTitle;
-        showTitle = result.showTitle;
-        deletedIndex = result.deletedIndex;
-      }
-  });
-}
-getUserData();
 
 // if not found then this is called by displayall
 function writeUserData() {
 
-  chrome.storage.sync.set({userTitle: userTitle, showTitle: showTitle, deletedIndex: deletedIndex}, function() {
+  chrome.storage.sync.set({userTitle: userTitle, showTitle: showTitle}, function() {
     console.log('Successfully written to storage');
   });
 }
@@ -335,11 +337,32 @@ function displayAll() {
   displayHtmlTable();
 
 
+  // listener to the remove button
+  $("#mainTableId").on('click', '.remove', function () {
+
+    // it takes the user title and returns the original title
+    function findOriginalTitle(titleToFind) {
+      for(let actualTitle in userTitle) {
+        if(userTitle[actualTitle] == titleToFind){
+          return actualTitle;
+        }
+      }
+    }
+
+    var currentRow=$(this).closest("tr"); 
+    var currentTitle = currentRow.find("td:eq(1)").text();
+
+    console.log("removing the title named ", findOriginalTitle(currentTitle));
+    showTitle[findOriginalTitle(currentTitle)] = false;
+    currentRow.remove(); 
+
+    writeUserData()
+  });
 
 
 
+  // listener to the edit input, not the best code ik
   var len = Object.keys(finalAllSeries).length;
-
   // adding listener to title and remove button
   for(let i=0; i<len; i++) {
 
@@ -351,7 +374,6 @@ function displayAll() {
     catch(err) {
       continue;
     }
-
 
     // this function is called whenever the user edits title
     document.getElementById("seriesName"+i).addEventListener("input", function() {
@@ -372,40 +394,7 @@ function displayAll() {
       writeUserData();
 
     }, false);
-
-
-    // this function is called whenever the user clicks on the remove botton
-    document.getElementById("button"+i).addEventListener("click", function() {
-
-      // console.log("clicked ", i+1);
-
-      // same idea as seriesName 
-      var j = 0;
-      for(var originalTitle in finalAllSeries) {
-        if(j == i) {
-          showTitle[originalTitle] = false;
-          break;
-        }
-        j++;
-      }
-
-      // removing the row entry from popup
-      var tempIndex = i;
-      for(var k=0; k<deletedIndex.length; k++) {
-        if(deletedIndex[k]<i)
-          tempIndex--;
-      }
-
-      document.getElementById("mainTableId").deleteRow(tempIndex+1);
-      // console.log("deleting", tempIndex+1);
-
-      deletedIndex.push(i);
-
-      writeUserData();
-
-    }, false);
-
-
+  
   }
 
 
@@ -416,7 +405,6 @@ function displayAll() {
 
     userTitle = {};
     showTitle = {};
-    deletedIndex = [];
     writeUserData();
 
     var Table = document.getElementById("mainTableId");
@@ -434,26 +422,29 @@ function displayAll() {
 
 
 
+function main() {
 
-chrome.history.search(
-   {
-  'text': '',
-  'maxResults': 0,
-  'startTime': 0
-   },
 
-  function(historyItems) {
+  chrome.history.search(
+     {
+    'text': '',
+    'maxResults': 0,
+    'startTime': 0
+     },
 
-      var allHistoryText = [];
-      var allHistoryUrl = [];
+    function(historyItems) {
 
-      for(var i=0; i<historyItems.length; i++) {
-        allHistoryText.push(historyItems[i]["title"]);
-        allHistoryUrl.push(historyItems[i]["url"]);
-      }
+        var allHistoryText = [];
+        var allHistoryUrl = [];
 
-      findSeries(allHistoryText, allHistoryUrl);
+        for(var i=0; i<historyItems.length; i++) {
+          allHistoryText.push(historyItems[i]["title"]);
+          allHistoryUrl.push(historyItems[i]["url"]);
+        }
 
-      displayAll();
-       
-});
+        findSeries(allHistoryText, allHistoryUrl);
+
+        displayAll();
+         
+  });
+}
