@@ -73,18 +73,20 @@ function findSeries(allHistoryText, allHistoryUrl) {
   for(var i=0; i<allHistoryText.length; i++) {
 
     if (
-       allHistoryText[i].includes("Watch") || 
-       allHistoryText[i].includes("watch") ||
-       allHistoryText[i].includes("Episode") ||
-       allHistoryText[i].includes("episode") ||
-       allHistoryText[i].includes("Season") ||
-       allHistoryText[i].includes("season") ||
-       allHistoryText[i].includes(" Ep ") ||
-       allHistoryText[i].includes(" ep ") ||
-       allHistoryText[i].includes("Chapter") ||
-       allHistoryText[i].includes("chapter") ||
-       allHistoryText[i].includes("Manga") ||
-       allHistoryText[i].includes("manga")
+       allHistoryText[i].toLowerCase().includes("watch") || 
+       // allHistoryText[i].includes("watch") ||
+       // allHistoryText[i].includes("Episode") ||
+       allHistoryText[i].toLowerCase().includes("episode") ||
+       // allHistoryText[i].includes(" Ep ") ||
+       allHistoryText[i].toLowerCase().includes(" ep ") ||
+       // allHistoryText[i].includes("Season") ||
+       allHistoryText[i].toLowerCase().includes("season") ||
+       // allHistoryText[i].includes("Chapter") ||
+       allHistoryText[i].toLowerCase().includes("chapter") ||
+       // allHistoryText[i].includes("Manga") ||
+       allHistoryText[i].toLowerCase().includes("manga") ||
+       // allHistoryText[i].includes("Read") ||
+       allHistoryText[i].toLowerCase().includes("read")
 
     ) {
 
