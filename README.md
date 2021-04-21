@@ -37,4 +37,8 @@ The user need to click on the extention icon which will creates a popup showing 
 
 3. Create a pull request
 
-Note: No additional libraries are required. The algorithm part is in popup.js.
+
+## Tech Stack
+JavaScript, Jquery, HTML, CSS
+
+Note: No additional libraries are required. The main code is in popup.js.
